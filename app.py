@@ -30,8 +30,14 @@ def home():
 </head>
 <body>
     <h1>Welcome to the Company Database</h1>
-    <a href="{{ url_for('employees') }}">View Employees</a>
-    <a href="{{ url_for('search_employee') }}">Search Employees</a>
+<form action="{{ url_for('add_employee') }}" method="get">
+    <button type="submit">Add Employee</button>
+</form>
+
+<form action="{{ url_for('search_employee') }}" method="get">
+    <button type="submit">Search Employees</button>
+</form>
+
 </body>
 </html>
     ''')
@@ -117,23 +123,66 @@ def employees():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee List</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
-    <h1>Employee List</h1>
-    <ul>
-    {% for employee in employees %}
-        <li>{{ employee.ssn }} - {{ employee.Fname }} {{ employee.Lname }} ({{ employee.Address }})
-            <a href="{{ url_for('update_employee', ssn=employee.ssn) }}">Edit</a>
-            <form action="{{ url_for('delete_employee', ssn=employee.ssn) }}" method="POST" style="display:inline;">
-                <button type="submit">Delete</button>
-            </form>
-        </li>
-    {% endfor %}
-    </ul>
-    <a href="{{ url_for('add_employee') }}">Add Employee</a>
-    <a href="{{ url_for('search_employee') }}">Search Employees</a>
+
+<h2>Employee List</h2>
+
+<table>
+  <tr>
+    <th>SSN</th>
+    <th>First Name</th>
+    <th>Middle Initial</th>
+    <th>Last Name</th>
+    <th>Birth Date</th>
+    <th>Address</th>
+    <th>Sex</th>
+    <th>Salary</th>
+    <th>Supervisor SSN</th>
+    <th>DL ID</th>
+  </tr>
+  {% for employee in employees %}
+  <tr>
+    <td>{{ employee.ssn }}</td>
+    <td>{{ employee.Fname }}</td>
+    <td>{{ employee.Minit }}</td>
+    <td>{{ employee.Lname }}</td>
+    <td>{{ employee.Bdate }}</td>
+    <td>{{ employee.Address }}</td>
+    <td>{{ employee.Sex }}</td>
+    <td>{{ employee.Salary }}</td>
+    <td>{{ employee.Super_ssn }}</td>
+    <td>{{ employee.DL_id }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<form action="{{ url_for('add_employee') }}" method="get">
+    <button type="submit">Add Employee</button>
+</form>
+
+<form action="{{ url_for('search_employee') }}" method="get">
+    <button type="submit">Search Employees</button>
+</form>
+
 </body>
 </html>
+
     ''', employees=employees)
 
 
