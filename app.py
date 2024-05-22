@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string, redirect, url_for, flash, make_response
+from flask import Flask, request, jsonify, render_template_string, redirect, url_for, flash, make_response, Response
 from flask_mysqldb import MySQL
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
@@ -122,7 +122,7 @@ def employees():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee List</title>
+    <title>EMPLOYEE LIST</title>
     <style>
         table {
             width: 100%;
@@ -180,7 +180,7 @@ def employees():
 <body>
 
 <div class="center">
-    <h2>Employee List</h2>
+    <h2>EMPLOYEE LIST</h2>
 
     <table>
         <tr>
@@ -212,65 +212,21 @@ def employees():
     </table>
 
     <div class="dropdown">
-        <button class="dropbtn">Download</button>
+        <button class="dropbtn">Save As</button>
         <div class="dropdown-content">
-            <a href="#" onclick="saveAs('json')">JSON</a>
-            <a href="#" onclick="saveAs('xml')">XML</a>
+            <a href="{{ url_for('download_json') }}" download="employees.json">JSON</a>
+            <a href="{{ url_for('download_xml') }}" download="employees.xml">XML</a>
         </div>
     </div>
 </div>
 
-<script>
-    function saveData(data, filename, type) {
-        var file = new Blob([data], {type: type});
-        if (window.navigator.msSaveOrOpenBlob) // IE10+
-            window.navigator.msSaveOrOpenBlob(file, filename);
-        else { // Others
-            var a = document.createElement("a"),
-                url = URL.createObjectURL(file);
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(function() {
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            }, 0);
-        }
-    }
+<form action="{{ url_for('add_employee') }}" method="get">
+    <button type="submit">Add Employee</button>
+</form>
 
-    function saveAs(format) {
-        if (format === 'json') {
-            var data = JSON.stringify({ employees: {% for employee in employees %}{{ employee }}{% if not loop.last %},{% endif %}{% endfor %}});
-            saveData(data, 'employees.json', 'application/json');
-        } else if (format === 'xml') {
-            var xml = '<?xml version="1.0" encoding="UTF-8"?><employees>';
-            {% for employee in employees %}
-            xml += '<employee>';
-            xml += '<ssn>{{ employee.ssn }}</ssn>';
-            xml += '<Fname>{{ employee.Fname }}</Fname>';
-            xml += '<Minit>{{ employee.Minit }}</Minit>';
-            xml += '<Lname>{{ employee.Lname }}</Lname>';
-            xml += '<Bdate>{{ employee.Bdate }}</Bdate>';
-            xml += '<Address>{{ employee.Address }}</Address>';
-            xml += '<Sex>{{ employee.Sex }}</Sex>';
-            xml += '<Salary>{{ employee.Salary }}</Salary>';
-            xml += '<Super_ssn>{{ employee.Super_ssn }}</Super_ssn>';
-            xml += '<DL_id>{{ employee.DL_id }}</DL_id>';
-            xml += '</employee>';
-            {% endfor %}
-            xml += '</employees>';
-            saveData(xml, 'employees.xml', 'application/xml');
-        }
-    }
-</script>
- <form action="{{ url_for('add_employee') }}" method="get">
-        <button type="submit">Add Employee</button>
-    </form>
-
-    <form action="{{ url_for('search_employee') }}" method="get">
-        <button type="submit">Search Employees</button>
-    </form>
+<form action="{{ url_for('search_employee') }}" method="get">
+    <button type="submit">Search Employees</button>
+</form>
 </body>
 </html>
 
@@ -326,7 +282,6 @@ def add_employee():
 </html>
     ''')
 
-@app.route('/update_employee/<ssn>', methods=['GET', 'POST'])
 def update_employee(ssn):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     if request.method == 'POST':
@@ -499,6 +454,32 @@ class EmployeeList(Resource):
         format = request.args.get('format', 'json')
         return output_format(employees, format), 200
 
+def generate_json_data():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM employee')
+    employees = cursor.fetchall()
+    return jsonify(employees)
+
+def generate_xml_data():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM employee')
+    employees = cursor.fetchall()
+    xml_data = '<?xml version="1.0" encoding="UTF-8"?><employees>'
+    for employee in employees:
+        xml_data += '<employee>'
+        for key, value in employee.items():
+            xml_data += f'<{key}>{value}</{key}>'
+        xml_data += '</employee>'
+    xml_data += '</employees>'
+    return Response(xml_data, mimetype='text/xml')
+
+@app.route('/download_json')
+def download_json():
+    return generate_json_data()
+
+@app.route('/download_xml')
+def download_xml():
+    return generate_xml_data()
 # Add resources for other tables (department, dependent, etc.)
 
 api.add_resource(Register, '/register')
