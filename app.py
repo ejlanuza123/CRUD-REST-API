@@ -31,9 +31,79 @@ def home():
 <body>
     <h1>Welcome to the Company Database</h1>
     <a href="{{ url_for('employees') }}">View Employees</a>
+    <a href="{{ url_for('search_employee') }}">Search Employees</a>
 </body>
 </html>
     ''')
+
+
+@app.route('/search_employee', methods=['GET', 'POST'])
+def search_employee():
+    if request.method == 'POST':
+        search_criteria = request.form['search_criteria']
+        search_value = request.form['search_value']
+        
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        query = f"SELECT * FROM employee WHERE {search_criteria} LIKE %s"
+        cursor.execute(query, (f"%{search_value}%",))
+        employees = cursor.fetchall()
+        
+        return render_template_string('''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+    {% if employees %}
+        <ul>
+        {% for employee in employees %}
+            <li>{{ employee.ssn }} - {{ employee.Fname }} {{ employee.Lname }} ({{ employee.Address }})
+                <a href="{{ url_for('update_employee', ssn=employee.ssn) }}">Edit</a>
+                <form action="{{ url_for('delete_employee', ssn=employee.ssn) }}" method="POST" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No employees found matching your criteria.</p>
+    {% endif %}
+    <a href="{{ url_for('employees') }}">Back to Employee List</a>
+</body>
+</html>
+        ''', employees=employees)
+    
+    return render_template_string('''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Employee</title>
+</head>
+<body>
+    <h1>Search Employee</h1>
+    <form action="{{ url_for('search_employee') }}" method="POST">
+        <label for="search_criteria">Search by:</label>
+        <select name="search_criteria" id="search_criteria" required>
+            <option value="ssn">SSN</option>
+            <option value="Fname">First Name</option>
+            <option value="Lname">Last Name</option>
+            <option value="Address">Address</option>
+            <!-- Add other search criteria as needed -->
+        </select><br>
+        <input type="text" name="search_value" placeholder="Search value" required><br>
+        <button type="submit">Search</button>
+    </form>
+    <a href="{{ url_for('employees') }}">Back to Employee List</a>
+</body>
+</html>
+    ''')
+
 
 @app.route('/employees')
 def employees():
@@ -61,9 +131,11 @@ def employees():
     {% endfor %}
     </ul>
     <a href="{{ url_for('add_employee') }}">Add Employee</a>
+    <a href="{{ url_for('search_employee') }}">Search Employees</a>
 </body>
 </html>
     ''', employees=employees)
+
 
 @app.route('/add_employee', methods=['GET', 'POST'])
 def add_employee():
