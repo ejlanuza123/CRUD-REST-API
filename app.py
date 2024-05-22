@@ -142,6 +142,39 @@ def employees():
         .center {
             text-align: center;
         }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #3e8e41;
+        }
     </style>
 </head>
 <body>
@@ -177,8 +210,61 @@ def employees():
         </tr>
         {% endfor %}
     </table>
+
+    <div class="dropdown">
+        <button class="dropbtn">Download</button>
+        <div class="dropdown-content">
+            <a href="#" onclick="saveAs('json')">JSON</a>
+            <a href="#" onclick="saveAs('xml')">XML</a>
+        </div>
+    </div>
 </div>
-    <form action="{{ url_for('add_employee') }}" method="get">
+
+<script>
+    function saveData(data, filename, type) {
+        var file = new Blob([data], {type: type});
+        if (window.navigator.msSaveOrOpenBlob) // IE10+
+            window.navigator.msSaveOrOpenBlob(file, filename);
+        else { // Others
+            var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function() {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 0);
+        }
+    }
+
+    function saveAs(format) {
+        if (format === 'json') {
+            var data = JSON.stringify({ employees: {% for employee in employees %}{{ employee }}{% if not loop.last %},{% endif %}{% endfor %}});
+            saveData(data, 'employees.json', 'application/json');
+        } else if (format === 'xml') {
+            var xml = '<?xml version="1.0" encoding="UTF-8"?><employees>';
+            {% for employee in employees %}
+            xml += '<employee>';
+            xml += '<ssn>{{ employee.ssn }}</ssn>';
+            xml += '<Fname>{{ employee.Fname }}</Fname>';
+            xml += '<Minit>{{ employee.Minit }}</Minit>';
+            xml += '<Lname>{{ employee.Lname }}</Lname>';
+            xml += '<Bdate>{{ employee.Bdate }}</Bdate>';
+            xml += '<Address>{{ employee.Address }}</Address>';
+            xml += '<Sex>{{ employee.Sex }}</Sex>';
+            xml += '<Salary>{{ employee.Salary }}</Salary>';
+            xml += '<Super_ssn>{{ employee.Super_ssn }}</Super_ssn>';
+            xml += '<DL_id>{{ employee.DL_id }}</DL_id>';
+            xml += '</employee>';
+            {% endfor %}
+            xml += '</employees>';
+            saveData(xml, 'employees.xml', 'application/xml');
+        }
+    }
+</script>
+ <form action="{{ url_for('add_employee') }}" method="get">
         <button type="submit">Add Employee</button>
     </form>
 
@@ -187,6 +273,7 @@ def employees():
     </form>
 </body>
 </html>
+
 
     ''', employees=employees)
 
@@ -420,4 +507,4 @@ api.add_resource(Employee, '/employee')
 api.add_resource(EmployeeList, '/employees')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host = '192.168.68.104')
