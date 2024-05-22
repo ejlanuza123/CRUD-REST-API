@@ -138,48 +138,53 @@ def employees():
         th {
             background-color: #f2f2f2;
         }
+
+        .center {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-<h2>Employee List</h2>
+<div class="center">
+    <h2>Employee List</h2>
 
-<table>
-  <tr>
-    <th>SSN</th>
-    <th>First Name</th>
-    <th>Middle Initial</th>
-    <th>Last Name</th>
-    <th>Birth Date</th>
-    <th>Address</th>
-    <th>Sex</th>
-    <th>Salary</th>
-    <th>Supervisor SSN</th>
-    <th>DL ID</th>
-  </tr>
-  {% for employee in employees %}
-  <tr>
-    <td>{{ employee.ssn }}</td>
-    <td>{{ employee.Fname }}</td>
-    <td>{{ employee.Minit }}</td>
-    <td>{{ employee.Lname }}</td>
-    <td>{{ employee.Bdate }}</td>
-    <td>{{ employee.Address }}</td>
-    <td>{{ employee.Sex }}</td>
-    <td>{{ employee.Salary }}</td>
-    <td>{{ employee.Super_ssn }}</td>
-    <td>{{ employee.DL_id }}</td>
-  </tr>
-  {% endfor %}
-</table>
-<form action="{{ url_for('add_employee') }}" method="get">
-    <button type="submit">Add Employee</button>
-</form>
+    <table>
+        <tr>
+            <th>SSN</th>
+            <th>First Name</th>
+            <th>Middle Initial</th>
+            <th>Last Name</th>
+            <th>Birth Date</th>
+            <th>Address</th>
+            <th>Sex</th>
+            <th>Salary</th>
+            <th>Supervisor SSN</th>
+            <th>DL ID</th>
+        </tr>
+        {% for employee in employees %}
+        <tr>
+            <td>{{ employee.ssn }}</td>
+            <td>{{ employee.Fname }}</td>
+            <td>{{ employee.Minit }}</td>
+            <td>{{ employee.Lname }}</td>
+            <td>{{ employee.Bdate }}</td>
+            <td>{{ employee.Address }}</td>
+            <td>{{ employee.Sex }}</td>
+            <td>{{ employee.Salary }}</td>
+            <td>{{ employee.Super_ssn }}</td>
+            <td>{{ employee.DL_id }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+    <form action="{{ url_for('add_employee') }}" method="get">
+        <button type="submit">Add Employee</button>
+    </form>
 
-<form action="{{ url_for('search_employee') }}" method="get">
-    <button type="submit">Search Employees</button>
-</form>
-
+    <form action="{{ url_for('search_employee') }}" method="get">
+        <button type="submit">Search Employees</button>
+    </form>
 </body>
 </html>
 
