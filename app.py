@@ -212,7 +212,7 @@ def employees():
     </table>
 
     <div class="dropdown">
-        <button class="dropbtn">Save As</button>
+        <button class="dropbtn">Download</button>
         <div class="dropdown-content">
             <a href="{{ url_for('download_json') }}" download="employees.json">JSON</a>
             <a href="{{ url_for('download_xml') }}" download="employees.xml">XML</a>
@@ -488,4 +488,4 @@ api.add_resource(Employee, '/employee')
 api.add_resource(EmployeeList, '/employees')
 
 if __name__ == "__main__":
-    app.run(debug=True, host = '192.168.68.104')
+    app.run(debug=True)
