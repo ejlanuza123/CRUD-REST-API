@@ -379,6 +379,24 @@ def employees():
         .dropdown:hover .dropdown-content {
             display: block;
         }
+                .back-to-home {
+            margin-top: 20px;
+        }
+
+        .back-to-home a {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .back-to-home a:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -412,12 +430,12 @@ def employees():
         </tr>
         {% endfor %}
     </table>
-
     <div class="dropdown">
         <button class="dropbtn">Download</button>
         <div class="dropdown-content">
             <a href="{{ url_for('download_json') }}" download="employees.json">JSON</a>
             <a href="{{ url_for('download_xml') }}" download="employees.xml">XML</a>
+            <a href="{{ url_for('home') }}">Back to Home</a> 
         </div>
     </div>
 </div>
