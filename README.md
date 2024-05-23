@@ -40,7 +40,6 @@ To run this project locally, follow these steps:
 
 4. Set up your MySQL database:
    
-   -
    - Open a MySQL database named `company`.
    - Update the database connection settings in `app.py` with your MySQL username, password, host, and database name.
 
