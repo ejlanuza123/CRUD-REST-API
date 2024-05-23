@@ -8,12 +8,12 @@ import xmltodict
 app = Flask(__name__)
 api = Api(app)
 
-app.secret_key = '0415'
+app.secret_key = 'your_secret_key'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'lanuza123'
+app.config['MYSQL_PASSWORD'] = 'your_mysql_password'
 app.config['MYSQL_DB'] = 'company'
-app.config['JWT_SECRET_KEY'] = '0415'
+app.config['JWT_SECRET_KEY'] = 'your_secret_key'
 
 mysql = MySQL(app)
 jwt = JWTManager(app)
