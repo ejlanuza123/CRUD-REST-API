@@ -44,6 +44,7 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'your_password_here'
 app.config['MYSQL_DB'] = 'company'
+ ```
 
 5. Set up your MySQL database:
    
