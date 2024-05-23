@@ -39,7 +39,7 @@ To run this project locally, follow these steps:
    ```
 4. Edit this information in your app.py:
 
-   ```bash
+   ```python
 app.secret_key = 'your_secret_key'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
