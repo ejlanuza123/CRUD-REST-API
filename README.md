@@ -37,19 +37,29 @@ To run this project locally, follow these steps:
    ```bash
    pip install -r requirements.txt
    ```
+4. Edit this information in your app.py:
 
-4. Set up your MySQL database:
+   ```bash
+app.secret_key = 'your_secret_key'
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'your_mysql_password'
+app.config['MYSQL_DB'] = 'company'
+app.config['JWT_SECRET_KEY'] = 'your_secret_key'pip install -r requirements.txt
+   ```
+
+5. Set up your MySQL database:
    
    - Open a MySQL database named `company`.
    - Update the database connection settings in `app.py` with your MySQL username, password, host, and database name.
 
-5. Run the Flask application:
+6. Run the Flask application:
 
    ```bash
    python app.py
    ```
 
-6. The application should now be running locally. Access it in your web browser at `http://localhost:5000`.
+7. The application should now be running locally. Access it in your web browser at `http://localhost:5000`. You can edit the "app.run(debug=True, host = "Your ip address")" in the last part of the code so you the other devices can access your system. Remember that the other devices must connected in one connection, LAN or wireless.
 
 ## Usage
 
