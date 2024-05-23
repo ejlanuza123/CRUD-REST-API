@@ -17,7 +17,8 @@ app.config['JWT_SECRET_KEY'] = '0415'
 
 mysql = MySQL(app)
 jwt = JWTManager(app)
-
+# Ensure users dictionary is defined
+users = {}
 @app.route('/register_page', methods=['GET', 'POST'])
 def register_page():
     if request.method == 'POST':
@@ -278,11 +279,6 @@ def logout():
     session.pop('username', None)
     flash('You have been logged out!', 'success')
     return redirect(url_for('login_page'))
-
-# Ensure users dictionary is defined
-users = {}
-
-
 
 @app.route('/employees')
 def employees():
