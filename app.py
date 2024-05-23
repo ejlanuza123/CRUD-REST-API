@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string, redirect, url_for, flash, make_response, Response
+from flask import Flask, request, jsonify, render_template_string, redirect, url_for, flash, make_response, Response, session
 from flask_mysqldb import MySQL
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
@@ -18,8 +18,77 @@ app.config['JWT_SECRET_KEY'] = '0415'
 mysql = MySQL(app)
 jwt = JWTManager(app)
 
+@app.route('/register_page', methods=['GET', 'POST'])
+def register_page():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if username in users:
+            flash('Username already exists!', 'danger')
+        else:
+            users[username] = password
+            flash('User registered successfully!', 'success')
+            return redirect(url_for('login_page'))
+
+    return render_template_string('''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<body>
+    <h1>Register</h1>
+    <form action="{{ url_for('register_page') }}" method="POST">
+        <input type="text" name="username" placeholder="Username" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <button type="submit">Register</button>
+    </form>
+    <a href="{{ url_for('login_page') }}">Login</a>
+</body>
+</html>
+    ''')
+
+@app.route('/login_page', methods=['GET', 'POST'])
+def login_page():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if username in users and users[username] == password:
+            session['username'] = username
+            flash('Logged in successfully!', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash('Invalid username or password!', 'danger')
+
+    return render_template_string('''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form action="{{ url_for('login_page') }}" method="POST">
+        <input type="text" name="username" placeholder="Username" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <button type="submit">Login</button>
+    </form>
+    <a href="{{ url_for('register_page') }}">Register</a>
+</body>
+</html>
+    ''')
+
 @app.route('/')
 def home():
+    if 'username' not in session:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login_page'))
     return render_template_string('''
 <!DOCTYPE html>
 <html lang="en">
@@ -30,85 +99,31 @@ def home():
 </head>
 <body>
     <h1>Welcome to the Company Database</h1>
-<form action="{{ url_for('add_employee') }}" method="get">
-    <button type="submit">Add Employee</button>
-</form>
-
-<form action="{{ url_for('search_employee') }}" method="get">
-    <button type="submit">Search Employees</button>
-</form>
-
-</body>
-</html>
-    ''')
-
-
-@app.route('/search_employee', methods=['GET', 'POST'])
-def search_employee():
-    if request.method == 'POST':
-        search_criteria = request.form['search_criteria']
-        search_value = request.form['search_value']
-        
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        query = f"SELECT * FROM employee WHERE {search_criteria} LIKE %s"
-        cursor.execute(query, (f"%{search_value}%",))
-        employees = cursor.fetchall()
-        
-        return render_template_string('''
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Results</title>
-</head>
-<body>
-    <h1>Search Results</h1>
-    {% if employees %}
-        <ul>
-        {% for employee in employees %}
-            <li>{{ employee.ssn }} - {{ employee.Fname }} {{ employee.Lname }} ({{ employee.Address }})
-                <a href="{{ url_for('update_employee', ssn=employee.ssn) }}">Edit</a>
-                <form action="{{ url_for('delete_employee', ssn=employee.ssn) }}" method="POST" style="display:inline;">
-                    <button type="submit">Delete</button>
-                </form>
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No employees found matching your criteria.</p>
-    {% endif %}
-    <a href="{{ url_for('employees') }}">Back to Employee List</a>
-</body>
-</html>
-        ''', employees=employees)
-    
-    return render_template_string('''
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Employee</title>
-</head>
-<body>
-    <h1>Search Employee</h1>
-    <form action="{{ url_for('search_employee') }}" method="POST">
-        <label for="search_criteria">Search by:</label>
-        <select name="search_criteria" id="search_criteria" required>
-            <option value="ssn">SSN</option>
-            <option value="Fname">First Name</option>
-            <option value="Lname">Last Name</option>
-            <option value="Address">Address</option>
-            <!-- Add other search criteria as needed -->
-        </select><br>
-        <input type="text" name="search_value" placeholder="Search value" required><br>
-        <button type="submit">Search</button>
+    <form action="{{ url_for('add_employee') }}" method="get">
+        <button type="submit">Add Employee</button>
     </form>
-    <a href="{{ url_for('employees') }}">Back to Employee List</a>
+    <form action="{{ url_for('search_employee') }}" method="get">
+        <button type="submit">Search Employees</button>
+    </form>
+    <form action="{{ url_for('employees') }}" method="get">
+        <button type="submit">Employee List</button>
+    </form>
+    <form action="{{ url_for('logout') }}" method="get">
+        <button type="submit">Logout</button>
+    </form>
 </body>
 </html>
     ''')
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    flash('You have been logged out!', 'success')
+    return redirect(url_for('login_page'))
+
+# Ensure users dictionary is defined
+users = {}
+
 
 
 @app.route('/employees')
@@ -232,6 +247,117 @@ def employees():
 
 
     ''', employees=employees)
+    
+@app.route('/search_employee', methods=['GET', 'POST'])
+def search_employee():
+    if request.method == 'POST':
+        search_term = request.form['search_term']
+        search_type = request.form['search_type']
+        
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        query = f"SELECT * FROM employee WHERE {search_type} LIKE %s"
+        cursor.execute(query, ('%' + search_term + '%',))
+        employees = cursor.fetchall()
+        
+        return render_template_string('''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="center">
+    <h2>Search Results</h2>
+    <table>
+        <tr>
+            <th>SSN</th>
+            <th>First Name</th>
+            <th>Middle Initial</th>
+            <th>Last Name</th>
+            <th>Birth Date</th>
+            <th>Address</th>
+            <th>Sex</th>
+            <th>Salary</th>
+            <th>Supervisor SSN</th>
+            <th>DL ID</th>
+            <th>Actions</th>
+        </tr>
+        {% for employee in employees %}
+        <tr>
+            <td>{{ employee.ssn }}</td>
+            <td>{{ employee.Fname }}</td>
+            <td>{{ employee.Minit }}</td>
+            <td>{{ employee.Lname }}</td>
+            <td>{{ employee.Bdate }}</td>
+            <td>{{ employee.Address }}</td>
+            <td>{{ employee.Sex }}</td>
+            <td>{{ employee.Salary }}</td>
+            <td>{{ employee.Super_ssn }}</td>
+            <td>{{ employee.DL_id }}</td>
+            <td>
+                <form action="{{ url_for('update_employee', ssn=employee.ssn) }}" method="get" style="display:inline;">
+                    <button type="submit">Edit</button>
+                </form>
+                <form action="{{ url_for('delete_employee', ssn=employee.ssn) }}" method="post" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{{ url_for('home') }}">Back to Home</a>
+    <a href="{{ url_for('employees') }}">Go to Employees List</a>
+</div>
+</body>
+</html>
+        ''', employees=employees)
+    
+    return render_template_string('''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Employee</title>
+</head>
+<body>
+    <h1>Search Employee</h1>
+    <form action="{{ url_for('search_employee') }}" method="POST">
+        <input type="text" name="search_term" placeholder="Search Term" required><br>
+        <select name="search_type">
+            <option value="ssn">SSN</option>
+            <option value="Fname">First Name</option>
+            <option value="Lname">Last Name</option>
+        </select><br>
+        <button type="submit">Search</button>
+    </form>
+    <a href="{{ url_for('home') }}">Back to Home</a>
+</body>
+</html>
+    ''')
 
 
 @app.route('/add_employee', methods=['GET', 'POST'])
@@ -282,6 +408,7 @@ def add_employee():
 </html>
     ''')
 
+@app.route('/update_employee/<ssn>', methods=['GET', 'POST'])
 def update_employee(ssn):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     if request.method == 'POST':
@@ -328,7 +455,7 @@ def update_employee(ssn):
 </body>
 </html>
     ''', employee=employee)
-
+    
 @app.route('/delete_employee/<ssn>', methods=['POST'])
 def delete_employee(ssn):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -482,10 +609,10 @@ def download_xml():
     return generate_xml_data()
 # Add resources for other tables (department, dependent, etc.)
 
-api.add_resource(Register, '/register')
-api.add_resource(Login, '/login')
-api.add_resource(Employee, '/employee')
-api.add_resource(EmployeeList, '/employees')
+api.add_resource(Register, '/api/register')
+api.add_resource(Login, '/api/login')
+api.add_resource(Employee, '/api/employee')
+api.add_resource(EmployeeList, '/api/employees')
 
 if __name__ == "__main__":
     app.run(debug=True)
