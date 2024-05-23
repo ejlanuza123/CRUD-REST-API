@@ -37,16 +37,13 @@ To run this project locally, follow these steps:
    ```bash
    pip install -r requirements.txt
    ```
-4. Edit this information in your app.py:
+4. Before running the application, make sure to configure the database connection settings in the `app.py` file. You'll need to edit the following part of the code to match your MySQL database configuration:
 
-   ```python
-app.secret_key = 'your_secret_key'
+```python
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'your_mysql_password'
+app.config['MYSQL_PASSWORD'] = 'your_password_here'
 app.config['MYSQL_DB'] = 'company'
-app.config['JWT_SECRET_KEY'] = 'your_secret_key'pip install -r requirements.txt
-   ```
 
 5. Set up your MySQL database:
    
