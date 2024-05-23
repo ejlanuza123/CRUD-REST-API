@@ -338,7 +338,7 @@ def employees():
             margin-top: 20px;
         }
 
-        .dropbtn {
+        .dropbtn, .viewbtn {
             background-color: #007bff;
             color: white;
             padding: 10px 15px;
@@ -348,7 +348,7 @@ def employees():
             transition: background-color 0.3s ease;
         }
 
-        .dropbtn:hover {
+        .dropbtn:hover, .viewbtn:hover {
             background-color: #0056b3;
         }
 
@@ -379,23 +379,9 @@ def employees():
         .dropdown:hover .dropdown-content {
             display: block;
         }
-                .back-to-home {
+
+        .view-container {
             margin-top: 20px;
-        }
-
-        .back-to-home a {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-            cursor: pointer;
-        }
-
-        .back-to-home a:hover {
-            background-color: #0056b3;
         }
     </style>
 </head>
@@ -430,13 +416,20 @@ def employees():
         </tr>
         {% endfor %}
     </table>
+
     <div class="dropdown">
         <button class="dropbtn">Download</button>
         <div class="dropdown-content">
             <a href="{{ url_for('download_json') }}" download="employees.json">JSON</a>
             <a href="{{ url_for('download_xml') }}" download="employees.xml">XML</a>
-            <a href="{{ url_for('home') }}">Back to Home</a> 
         </div>
+    </div>
+
+    <div class="view-container">
+        <form action="{{ url_for('view_as') }}" method="get">
+            <button type="submit" name="format" value="json" class="viewbtn">View as JSON</button>
+            <button type="submit" name="format" value="xml" class="viewbtn">View as XML</button>
+        </form>
     </div>
 </div>
 
@@ -451,7 +444,21 @@ def employees():
 </html>
 
     ''', employees=employees)
+
+
+
+@app.route('/view_as', methods=['GET'])
+def view_as():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM employee')
+    employees = cursor.fetchall()
     
+    format = request.args.get('format', 'json')  # Default to 'json' if no format is specified
+    return output_format(employees, format)
+
+
+
+
 @app.route('/search_employee', methods=['GET', 'POST'])
 def search_employee():
     if request.method == 'POST':
@@ -900,12 +907,13 @@ def delete_employee(ssn):
 
 def output_format(data, format='json'):
     if format == 'xml':
-        response = make_response(xmltodict.unparse({"response": data}, pretty=True))
+        response = make_response(xmltodict.unparse({"response": {"employees": data}}, pretty=True))
         response.headers['Content-Type'] = 'application/xml'
     else:
         response = make_response(jsonify(data))
         response.headers['Content-Type'] = 'application/json'
     return response
+
 
 # API Endpoints
 class Register(Resource):
@@ -1049,4 +1057,4 @@ api.add_resource(Employee, '/api/employee')
 api.add_resource(EmployeeList, '/api/employees')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host = "192.168.68.104")
