@@ -1,4 +1,3 @@
-
 # CRUD REST API - Company Database Employee Management
 
 A simple employee management system built with Flask and MySQL.
@@ -32,24 +31,40 @@ To run this project locally, follow these steps:
    cd CRUD-REST-API
    ```
 
-3. Install the required dependencies:
+3. Create and activate a virtual environment (optional but recommended):
+
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+4. Install the required dependencies:
 
    ```bash
    pip install -r requirements.txt
    ```
+   
+5. Before running the application, make sure to configure the database connection settings in the `app.py` file. You'll need to edit the following part of the code to match your MySQL database configuration:
 
-4. Set up your MySQL database:
+```python
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'your_password_here'
+app.config['MYSQL_DB'] = 'company'
+ ```
+
+6. Set up your MySQL database:
    
    - Open a MySQL database named `company`.
    - Update the database connection settings in `app.py` with your MySQL username, password, host, and database name.
 
-5. Run the Flask application:
+7. Run the Flask application:
 
    ```bash
    python app.py
    ```
 
-6. The application should now be running locally. Access it in your web browser at `http://localhost:5000`.
+8. The application should now be running locally. Access it in your web browser at http://localhost:5000. You can edit the `app.run(debug=True, host="Your IP address")` in the last part of the code so that other devices can access your system. Remember that the other devices must be connected on the same network, either LAN or wireless.
 
 ## Usage
 
@@ -77,4 +92,3 @@ The application exposes the following API endpoints:
 - This project is for educational purposes and may not be suitable for production use without further enhancements.
 - Contributions are welcome. Feel free to submit issues or pull requests.
 
----
