@@ -12,8 +12,8 @@ api = Api(app)
 app.secret_key = 'your_secret_key'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'lanuza123'
-app.config['MYSQL_DB'] = 'company'
+app.config['MYSQL_PASSWORD'] = 'your_mysql_password'
+app.config['MYSQL_DB'] = 'name_of_database'
 app.config['JWT_SECRET_KEY'] = 'your_secret_key'
 
 mysql = MySQL(app)
@@ -1065,4 +1065,4 @@ api.add_resource(Employee, '/api/employee')
 api.add_resource(EmployeeList, '/api/employees')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host = "your_ip_address")
