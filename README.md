@@ -50,7 +50,7 @@ To run this project locally, follow these steps:
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'your_password_here'
-app.config['MYSQL_DB'] = 'company'
+app.config['MYSQL_DB'] = 'your_database_name'
  ```
 
 6. Set up your MySQL database:
