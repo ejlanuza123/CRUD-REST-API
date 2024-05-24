@@ -4,6 +4,7 @@ from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 import MySQLdb.cursors
 import xmltodict
+import re
 
 app = Flask(__name__)
 api = Api(app)
@@ -11,26 +12,30 @@ api = Api(app)
 app.secret_key = 'your_secret_key'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'your_mysql_password'
+app.config['MYSQL_PASSWORD'] = 'lanuza123'
 app.config['MYSQL_DB'] = 'company'
 app.config['JWT_SECRET_KEY'] = 'your_secret_key'
 
 mysql = MySQL(app)
 jwt = JWTManager(app)
 
-@app.route('/register_page', methods=['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register_page():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        if username in users:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE username = %s', (username,))
+        account = cursor.fetchone()
+
+        if account:
             flash('Username already exists!', 'danger')
         else:
-            users[username] = password
+            cursor.execute('INSERT INTO accounts (username, password) VALUES (%s, %s)', (username, password))
+            mysql.connection.commit()
             flash('User registered successfully!', 'success')
             return redirect(url_for('login_page'))
-
     return render_template_string('''
 <!DOCTYPE html>
 <html lang="en">
@@ -110,14 +115,19 @@ def register_page():
 </html>
     ''')
 
-@app.route('/login_page', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login_page():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        if username in users and users[username] == password:
-            session['username'] = username
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE username = %s AND password = %s', (username, password,))
+        account = cursor.fetchone()
+
+        if account:
+            session['loggedin'] = True
+            session['username'] = account['username']
             flash('Logged in successfully!', 'success')
             return redirect(url_for('home'))
         else:
@@ -275,13 +285,11 @@ def home():
 
 @app.route('/logout')
 def logout():
+    session.pop('loggedin', None)
+    session.pop('id', None)
     session.pop('username', None)
     flash('You have been logged out!', 'success')
     return redirect(url_for('login_page'))
-
-# Ensure users dictionary is defined
-users = {}
-
 
 
 @app.route('/employees')
@@ -1057,4 +1065,4 @@ api.add_resource(Employee, '/api/employee')
 api.add_resource(EmployeeList, '/api/employees')
 
 if __name__ == "__main__":
-    app.run(debug=True, host = "192.168.68.104")
+    app.run(debug=True)
